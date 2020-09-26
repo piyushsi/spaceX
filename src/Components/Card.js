@@ -18,6 +18,8 @@ import LaunchImg from "./Launch.png";
 import Success from "./success.png";
 import Failure from "./failure.png";
 import Progress from "./progress.png";
+import Modal from './Modal'
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -52,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
     width: 38,
   },
   launch: {
-    height: "5rem",
+    height: "4rem",
     padding: ".5rem",
   },
   launch_status: {
@@ -157,6 +159,7 @@ export default function MediaControlCard(props) {
             </DialogTitle>
             <DialogContent>
               <DialogContentText id="alert-dialog-slide-description">
+              <Modal data={props.data}/>
               </DialogContentText>
             </DialogContent>
             <DialogActions></DialogActions>
