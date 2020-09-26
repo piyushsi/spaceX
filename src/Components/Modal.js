@@ -32,7 +32,7 @@ export default function AlignItemsList(props) {
         Site: {props.data.launch_site.site_name_long}
       </Typography>
       <Typography variant="subtitle1" color="textSecondary">
-        Details: {props.data.details}
+        Details: {props.data.details?props.data.details:"N/A"}
       </Typography>
       <ListItem alignItems="flex-start">
         <ListItemText
