@@ -19,6 +19,8 @@ import {
   KeyboardDatePicker,
 } from "@material-ui/pickers";
 import DateRangeIcon from "@material-ui/icons/DateRange";
+import CancelIcon from "@material-ui/icons/Cancel";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -70,6 +72,19 @@ export default function CenteredGrid() {
       return !launch.upcoming;
     });
     setLaunches(upcoming);
+  };
+
+  const filterFailed = () => {
+    let failed = allLaunches.filter(
+      (launch) =>
+        !launch.launch_success && typeof launch.launch_success != "object"
+    );
+    setLaunches(failed);
+  };
+
+  const filterSuccess = () => {
+    let success = allLaunches.filter((launch) => launch.launch_success);
+    setLaunches(success);
   };
 
   const [selectedStartDate, setSelectedStartDate] = React.useState(
@@ -151,6 +166,16 @@ export default function CenteredGrid() {
                 label="Date Range"
                 icon={<DateRangeIcon />}
                 onClick={() => setDateResultActive(!dateResultActive)}
+              />
+              <BottomNavigationAction
+                label="Failed Launch"
+                icon={<CancelIcon />}
+                onClick={() => filterFailed()}
+              />
+              <BottomNavigationAction
+                label="Successful Launch"
+                icon={<CheckCircleIcon />}
+                onClick={() => filterSuccess()}
               />
             </BottomNavigation>
             {dateResultActive ? (
