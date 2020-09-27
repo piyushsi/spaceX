@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
-import Axios from "axios";
 import Card from "./Card";
 import spaceX from "./spaceX.jpg";
 import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
-import Loader from "./Common/Loader";
 import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import RestoreIcon from "@material-ui/icons/Restore";
@@ -21,6 +19,7 @@ import {
 import DateRangeIcon from "@material-ui/icons/DateRange";
 import CancelIcon from "@material-ui/icons/Cancel";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -53,10 +52,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function CenteredGrid() {
+export default function CenteredGrid(props) {
   const classes = useStyles();
-  const [allLaunches, setAllLaunches] = useState(null);
-  const [launches, setLaunches] = useState(null);
+  const [allLaunches, setAllLaunches] = useState(props.data.launches);
+  const [launches, setLaunches] = useState(props.data.launches);
   const [value, setValue] = React.useState(0);
   const [dateResultActive, setDateResultActive] = React.useState(null);
 
@@ -120,12 +119,30 @@ export default function CenteredGrid() {
   };
 
   useEffect(() => {
-    Axios.get("https://api.spacexdata.com/v3/launches").then((res) => {
-      setLaunches(res.data);
-      setAllLaunches(res.data);
-    });
+    switch (props.data.value) {
+      case 1:
+        setValue(1);
+        filterUpcoming();
+        break;
+      case 2:
+        setValue(2);
+        filterPast();
+        break;
+      case 3:
+        setValue(3);
+        break;
+      case 4:
+        setValue(4);
+        filterFailed();
+        break;
+      case 5:
+        setValue(5);
+        filterSuccess();
+        break;
+      default:
+    }
   }, []);
-  console.log(allLaunches);
+
   return (
     <div className={classes.root}>
       {allLaunches ? (
@@ -144,36 +161,48 @@ export default function CenteredGrid() {
               onChange={(event, newValue) => {
                 setValue(newValue);
                 setDateResultActive(false);
-                setStartDate(null)
+                setStartDate(null);
               }}
               showLabels
             >
               <BottomNavigationAction
+                component={Link}
                 label="All"
+                to="/"
                 icon={<StorageIcon />}
                 onClick={() => setLaunches(allLaunches)}
               />
               <BottomNavigationAction
+                component={Link}
+                to="/upcoming"
                 label="Upcoming"
                 icon={<RestoreIcon />}
                 onClick={() => filterUpcoming()}
               />
               <BottomNavigationAction
+                component={Link}
+                to="/past"
                 label="Past"
                 icon={<ClearAllIcon />}
                 onClick={() => filterPast()}
               />
               <BottomNavigationAction
+                component={Link}
+                to="/date"
                 label="Date Range"
                 icon={<DateRangeIcon />}
                 onClick={() => setDateResultActive(!dateResultActive)}
               />
               <BottomNavigationAction
+                component={Link}
+                to="/failed"
                 label="Failed Launch"
                 icon={<CancelIcon />}
                 onClick={() => filterFailed()}
               />
               <BottomNavigationAction
+                component={Link}
+                to="/success"
                 label="Successful Launch"
                 icon={<CheckCircleIcon />}
                 onClick={() => filterSuccess()}
@@ -228,7 +257,7 @@ export default function CenteredGrid() {
           })}
         </Grid>
       ) : (
-        <Loader />
+        ""
       )}
     </div>
   );
