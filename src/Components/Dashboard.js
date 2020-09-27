@@ -144,6 +144,7 @@ export default function CenteredGrid() {
               onChange={(event, newValue) => {
                 setValue(newValue);
                 setDateResultActive(false);
+                setStartDate(null)
               }}
               showLabels
             >
