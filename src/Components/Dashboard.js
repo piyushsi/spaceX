@@ -12,6 +12,13 @@ import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import RestoreIcon from "@material-ui/icons/Restore";
 import StorageIcon from "@material-ui/icons/Storage";
 import ClearAllIcon from "@material-ui/icons/ClearAll";
+import DateFnsUtils from "@date-io/date-fns";
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from "@material-ui/pickers";
+import DateRangeIcon from "@material-ui/icons/DateRange";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -38,6 +45,10 @@ const useStyles = makeStyles((theme) => ({
     color: "#fff",
     fontSize: "2rem",
   },
+  center: {
+    textAlign: "center",
+    color: "#3F51B5",
+  },
 }));
 
 export default function CenteredGrid() {
@@ -45,6 +56,7 @@ export default function CenteredGrid() {
   const [allLaunches, setAllLaunches] = useState(null);
   const [launches, setLaunches] = useState(null);
   const [value, setValue] = React.useState(0);
+  const [dateResultActive, setDateResultActive] = React.useState(null);
 
   const filterUpcoming = () => {
     let upcoming = allLaunches.filter((launch) => {
@@ -58,6 +70,38 @@ export default function CenteredGrid() {
       return !launch.upcoming;
     });
     setLaunches(upcoming);
+  };
+
+  const [selectedStartDate, setSelectedStartDate] = React.useState(
+    new Date("2006-03-25T21:11:54")
+  );
+
+  const [selectedEndDate, setSelectedEndDate] = React.useState(new Date());
+
+  const [startDate, setStartDate] = React.useState(null);
+
+  const handleDateChangeStart = (date) => {
+    let unixTime = new Date(date).valueOf() / 1000;
+    setStartDate(unixTime);
+    let filteredLaunch = allLaunches.filter((el) => {
+      return el.launch_date_unix >= unixTime;
+    });
+    setLaunches(filteredLaunch);
+    setSelectedStartDate(date);
+    setSelectedEndDate(new Date());
+  };
+
+  const handleDateChangeEnd = (date) => {
+    let unixTime = new Date(date).valueOf() / 1000;
+    setSelectedEndDate(date);
+    dateWiseResult(unixTime);
+  };
+
+  const dateWiseResult = (endDate) => {
+    let filteredLaunch = allLaunches
+      .filter((el) => el.launch_date_unix >= startDate)
+      .filter((el) => el.launch_date_unix <= endDate);
+    setLaunches(filteredLaunch);
   };
 
   useEffect(() => {
@@ -84,6 +128,7 @@ export default function CenteredGrid() {
               value={value}
               onChange={(event, newValue) => {
                 setValue(newValue);
+                setDateResultActive(false);
               }}
               showLabels
             >
@@ -102,7 +147,48 @@ export default function CenteredGrid() {
                 icon={<ClearAllIcon />}
                 onClick={() => filterPast()}
               />
+              <BottomNavigationAction
+                label="Date Range"
+                icon={<DateRangeIcon />}
+                onClick={() => setDateResultActive(!dateResultActive)}
+              />
             </BottomNavigation>
+            {dateResultActive ? (
+              <div className={classes.center}>
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <KeyboardDatePicker
+                    margin="normal"
+                    id="date-picker-dialog"
+                    label="Start Date"
+                    format="MM/dd/yyyy"
+                    value={selectedStartDate}
+                    onChange={handleDateChangeStart}
+                    KeyboardButtonProps={{
+                      "aria-label": "change date",
+                    }}
+                  />
+                  {startDate ? (
+                    <KeyboardDatePicker
+                      margin="normal"
+                      id="date-picker-dialog"
+                      label="End Date"
+                      format="MM/dd/yyyy"
+                      value={selectedEndDate}
+                      onChange={handleDateChangeEnd}
+                      KeyboardButtonProps={{
+                        "aria-label": "change date",
+                      }}
+                    />
+                  ) : (
+                    ""
+                  )}
+                </MuiPickersUtilsProvider>
+              </div>
+            ) : (
+              ""
+            )}
+
+            <div className={classes.center}>{launches.length} Launches</div>
           </Grid>
 
           {launches.map((launch) => {
