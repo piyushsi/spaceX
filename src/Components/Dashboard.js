@@ -20,6 +20,10 @@ import DateRangeIcon from "@material-ui/icons/DateRange";
 import CancelIcon from "@material-ui/icons/Cancel";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import { Link } from "react-router-dom";
+import Table from "./Table";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import Switch from "@material-ui/core/Switch";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -50,6 +54,9 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "center",
     color: "#3F51B5",
   },
+  switch: {
+    float: "right",
+  },
 }));
 
 export default function CenteredGrid(props) {
@@ -58,6 +65,11 @@ export default function CenteredGrid(props) {
   const [launches, setLaunches] = useState(props.data.launches);
   const [value, setValue] = React.useState(0);
   const [dateResultActive, setDateResultActive] = React.useState(null);
+  const [grid, setGrid] = React.useState(false);
+
+  const handleGridChange = () => {
+    setGrid(!grid);
+  };
 
   const filterUpcoming = () => {
     let upcoming = allLaunches.filter((launch) => {
@@ -243,18 +255,34 @@ export default function CenteredGrid(props) {
               ""
             )}
 
-            <div className={classes.center}>{launches.length} Launches</div>
+            <div className={classes.center}>
+              {launches.length} Launches{" "}
+              <FormControlLabel
+                className={classes.switch}
+                control={
+                  <Switch
+                    checked={grid}
+                    onChange={handleGridChange}
+                    name="gilad"
+                  />
+                }
+                label="Grid View"
+              />
+            </div>
           </Grid>
-
-          {launches.map((launch) => {
-            return (
-              <Grid item xs={12} md={3}>
-                <Paper className={classes.paper}>
-                  <Card data={launch} />
-                </Paper>
-              </Grid>
-            );
-          })}
+          {grid ? (
+            launches.map((launch) => {
+              return (
+                <Grid item xs={12} md={3}>
+                  <Paper className={classes.paper}>
+                    <Card data={launch} />
+                  </Paper>
+                </Grid>
+              );
+            })
+          ) : (
+            <Table data={launches} />
+          )}
         </Grid>
       ) : (
         ""
