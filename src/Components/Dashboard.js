@@ -138,7 +138,6 @@ export default function CenteredGrid(props) {
     setLaunches(all);
     setSuccessFilter(false);
     setDateFilter(false);
-    searchFilter();
   };
   const filterUpcoming = () => {
     let upcoming = props.data.all.filter((launch) => {
@@ -147,7 +146,6 @@ export default function CenteredGrid(props) {
     setLaunches(upcoming);
     setSuccessFilter(false);
     setDateFilter(false);
-    searchFilter();
   };
 
   const filterPast = () => {
@@ -157,7 +155,6 @@ export default function CenteredGrid(props) {
     setLaunches(past);
     setSuccessFilter(false);
     setDateFilter(false);
-    searchFilter();
   };
 
   const filterSuccess = () => {
@@ -208,14 +205,17 @@ export default function CenteredGrid(props) {
       case 0:
         setValue(0);
         filterAll();
+        searchFilter();
         break;
       case 1:
         setValue(1);
         filterUpcoming();
+        searchFilter();
         break;
       case 2:
         setValue(2);
         filterPast();
+        searchFilter();
         break;
       default:
     }
