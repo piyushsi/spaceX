@@ -52,6 +52,8 @@ function createData(name, code, population, size) {
 const useStyles = makeStyles({
   root: {
     width: "100%",
+    margin:'2rem',
+    border:'1px solid lightgrey'
   },
   img: {
     height: "5rem",
@@ -67,6 +69,9 @@ const useStyles = makeStyles({
   title: {
     marginLeft: "8rem",
   },
+  table_row:{
+    cursor:'pointer'
+  }
 });
 
 export default function StickyHeadTable(props) {
@@ -108,6 +113,7 @@ export default function StickyHeadTable(props) {
             {props.data.map((row) => {
               return (
                 <TableRow
+                className={classes.table_row}
                   hover
                   role="checkbox"
                   onClick={() => handleClickOpen(row)}

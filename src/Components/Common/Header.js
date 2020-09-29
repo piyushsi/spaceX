@@ -21,6 +21,7 @@ import WorkIcon from "@material-ui/icons/Work";
 import UpdateIcon from "@material-ui/icons/Update";
 import ShopIcon from "@material-ui/icons/Shop";
 import Button from "@material-ui/core/Button";
+import { Link } from "react-router-dom";
 
 const drawerWidth = 240;
 
@@ -117,7 +118,9 @@ export default function PersistentDrawerRight() {
         })}
       >
         <Toolbar>
+        
           <Typography variant="h6" noWrap className={classes.title}>
+            <Link to='/'>
             <svg
               version="1.1"
               x="0px"
@@ -182,7 +185,7 @@ export default function PersistentDrawerRight() {
                   d="M399,0.7c-80,4.6-117,38.8-125.3,46.9l-1.7,1.6h14.8C326.8,9.1,384.3,2,399,0.7L399,0.7z"
                 ></path>
               </g>
-            </svg>
+            </svg></Link>
             <span className={classes.nav}>
               <Button style={{ color: "#fff" }}>FALCON 9</Button>
               <Button style={{ color: "#fff" }}>FALCON HEAVY</Button>

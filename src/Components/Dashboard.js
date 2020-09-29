@@ -10,20 +10,15 @@ import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import RestoreIcon from "@material-ui/icons/Restore";
 import StorageIcon from "@material-ui/icons/Storage";
 import ClearAllIcon from "@material-ui/icons/ClearAll";
-import DateFnsUtils from "@date-io/date-fns";
-import {
-  MuiPickersUtilsProvider,
-  KeyboardTimePicker,
-  KeyboardDatePicker,
-} from "@material-ui/pickers";
-import DateRangeIcon from "@material-ui/icons/DateRange";
-import CancelIcon from "@material-ui/icons/Cancel";
+import TextField from "@material-ui/core/TextField";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import { Link } from "react-router-dom";
 import Table from "./Table";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import Switch from "@material-ui/core/Switch";
+import Divider from "@material-ui/core/Divider";
+import DateRangeIcon from "@material-ui/icons/DateRange";
+import FindReplaceIcon from "@material-ui/icons/FindReplace";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,83 +50,165 @@ const useStyles = makeStyles((theme) => ({
     color: "#3F51B5",
   },
   switch: {
-    float: "right",
+    right: "0",
+    position: "absolute",
+  },
+  filters: {
+    textAlign: "center",
+  },
+  container: {
+    display: "flex",
+    flexWrap: "wrap",
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: 200,
   },
 }));
 
 export default function CenteredGrid(props) {
   const classes = useStyles();
-  const [allLaunches, setAllLaunches] = useState(props.data.launches);
+  const [allLaunches, setAllLaunches] = useState(props.data.all);
   const [launches, setLaunches] = useState(props.data.launches);
+  const [store, setStore] = useState(null);
   const [value, setValue] = React.useState(0);
-  const [dateResultActive, setDateResultActive] = React.useState(null);
   const [grid, setGrid] = React.useState(false);
+  const [successFilter, setSuccessFilter] = React.useState(false);
+  const [dateFilter, setDateFilter] = React.useState(false);
+  const [dateRange, setDateRange] = React.useState("1136073600/1601424000");
+  const [initialDateRange, setInitialDateRange] = React.useState("1136073600");
+  const [finalDateRange, setFinalDateRange] = React.useState("1601424000");
 
   const handleGridChange = () => {
     setGrid(!grid);
   };
 
+  const successUrl = () => {
+    var store = successFilter
+      ? props.data.location.pathname
+      : props.data.location.pathname + "?true";
+    return store;
+  };
+
+  const dateUrl = () => {
+    var store = successFilter
+      ? props.data.location.pathname + "?true"
+      : props.data.location.pathname;
+    var newStore = dateFilter ? store + "?date?" + dateRange : store;
+    return newStore;
+  };
+
+  const searchFilter = () => {
+    let search = props.data.location.search;
+    if (search.includes("true")) {
+      filterSuccess();
+    }
+    if (search.includes("date") && search.includes("true")) {
+      let date = search.split("?")[3] ? search.split("?")[3].split("/") : null;
+      filterDate();
+      if (date) {
+        setDateFilter(true);
+        setInitialDateRange(date[0]);
+        setFinalDateRange(date[1]);
+        let filtered = launches
+          .filter((el) => el.launch_date_unix >= date[0])
+          .filter((el) => el.launch_date_unix <= date[1]);
+        let finalLaunch = filtered.filter((launch) => launch.launch_success);
+        setLaunches(finalLaunch);
+      }
+    }
+    if (search.includes("date") && !search.includes("true")) {
+      let date = search.split("?")[2] ? search.split("?")[2].split("/") : null;
+      filterDate();
+      if (date) {
+        setDateFilter(true);
+        setInitialDateRange(date[0]);
+        setFinalDateRange(date[1]);
+        let filtered = launches
+          .filter((el) => el.launch_date_unix >= date[0])
+          .filter((el) => el.launch_date_unix <= date[1]);
+        let finalLaunch = filtered.filter((launch) => launch.launch_success);
+        setLaunches(finalLaunch);
+      }
+    }
+  };
+  const filterAll = () => {
+    let all = props.data.all;
+    setLaunches(all);
+    setSuccessFilter(false);
+    setDateFilter(false);
+    searchFilter();
+  };
   const filterUpcoming = () => {
-    let upcoming = allLaunches.filter((launch) => {
+    let upcoming = props.data.all.filter((launch) => {
       return launch.upcoming;
     });
     setLaunches(upcoming);
+    setSuccessFilter(false);
+    setDateFilter(false);
+    searchFilter();
   };
 
   const filterPast = () => {
-    let upcoming = allLaunches.filter((launch) => {
+    let past = props.data.all.filter((launch) => {
       return !launch.upcoming;
     });
-    setLaunches(upcoming);
-  };
-
-  const filterFailed = () => {
-    let failed = allLaunches.filter(
-      (launch) =>
-        !launch.launch_success && typeof launch.launch_success != "object"
-    );
-    setLaunches(failed);
+    setLaunches(past);
+    setSuccessFilter(false);
+    setDateFilter(false);
+    searchFilter();
   };
 
   const filterSuccess = () => {
-    let success = allLaunches.filter((launch) => launch.launch_success);
-    setLaunches(success);
+    let date = dateRange.split("/");
+    let success = launches.filter((launch) => launch.launch_success);
+    let finalLaunch =
+      dateFilter && dateRange != ""
+        ? success
+            .filter((el) => el.launch_date_unix >= date[0])
+            .filter((el) => el.launch_date_unix <= date[1])
+        : success;
+    if (!successFilter) {
+      setStore(launches);
+      setLaunches(finalLaunch);
+    } else {
+      setLaunches(store);
+    }
+    setSuccessFilter(!successFilter);
   };
 
-  const [selectedStartDate, setSelectedStartDate] = React.useState(
-    new Date("2006-03-25T21:11:54")
-  );
-
-  const [selectedEndDate, setSelectedEndDate] = React.useState(new Date());
-
-  const [startDate, setStartDate] = React.useState(null);
-
-  const handleDateChangeStart = (date) => {
-    let unixTime = new Date(date).valueOf() / 1000;
-    setStartDate(unixTime);
-    let filteredLaunch = allLaunches.filter((el) => {
-      return el.launch_date_unix >= unixTime;
-    });
-    setLaunches(filteredLaunch);
-    setSelectedStartDate(date);
-    setSelectedEndDate(new Date());
-  };
-
-  const handleDateChangeEnd = (date) => {
-    let unixTime = new Date(date).valueOf() / 1000;
-    setSelectedEndDate(date);
-    dateWiseResult(unixTime);
-  };
-
-  const dateWiseResult = (endDate) => {
+  const filterDate = () => {
+    let date = dateRange.split("/");
     let filteredLaunch = allLaunches
-      .filter((el) => el.launch_date_unix >= startDate)
-      .filter((el) => el.launch_date_unix <= endDate);
-    setLaunches(filteredLaunch);
+      .filter((el) => el.launch_date_unix >= date[0])
+      .filter((el) => el.launch_date_unix <= date[1]);
+    let finalLaunch = successFilter
+      ? filteredLaunch.filter((launch) => launch.launch_success)
+      : filteredLaunch;
+    setLaunches(finalLaunch);
+  };
+
+  const initialDate = (e) => {
+    setInitialDateRange(new Date(e.target.value).valueOf() / 1000);
+    setDateRange(
+      new Date(e.target.value).valueOf() / 1000 + "/" + finalDateRange
+    );
+  };
+
+  const finalDate = (e) => {
+    setFinalDateRange(new Date(e.target.value).valueOf() / 1000);
+    setDateRange(
+      initialDateRange + "/" + new Date(e.target.value).valueOf() / 1000
+    );
   };
 
   useEffect(() => {
     switch (props.data.value) {
+      case 0:
+        setValue(0);
+        filterAll();
+        break;
       case 1:
         setValue(1);
         filterUpcoming();
@@ -140,21 +217,9 @@ export default function CenteredGrid(props) {
         setValue(2);
         filterPast();
         break;
-      case 3:
-        setValue(3);
-        break;
-      case 4:
-        setValue(4);
-        filterFailed();
-        break;
-      case 5:
-        setValue(5);
-        filterSuccess();
-        break;
       default:
     }
   }, []);
-
   return (
     <div className={classes.root}>
       {allLaunches ? (
@@ -172,8 +237,6 @@ export default function CenteredGrid(props) {
               value={value}
               onChange={(event, newValue) => {
                 setValue(newValue);
-                setDateResultActive(false);
-                setStartDate(null);
               }}
               showLabels
             >
@@ -182,7 +245,7 @@ export default function CenteredGrid(props) {
                 label="All"
                 to="/"
                 icon={<StorageIcon />}
-                onClick={() => setLaunches(allLaunches)}
+                onClick={() => filterAll()}
               />
               <BottomNavigationAction
                 component={Link}
@@ -198,62 +261,64 @@ export default function CenteredGrid(props) {
                 icon={<ClearAllIcon />}
                 onClick={() => filterPast()}
               />
+            </BottomNavigation>
+            <Divider />
+            <div className={classes.filters}>
               <BottomNavigationAction
+                style={{ color: successFilter ? "blue" : "" }}
                 component={Link}
-                to="/date"
-                label="Date Range"
-                icon={<DateRangeIcon />}
-                onClick={() => setDateResultActive(!dateResultActive)}
-              />
-              <BottomNavigationAction
-                component={Link}
-                to="/failed"
-                label="Failed Launch"
-                icon={<CancelIcon />}
-                onClick={() => filterFailed()}
-              />
-              <BottomNavigationAction
-                component={Link}
-                to="/success"
-                label="Successful Launch"
+                to={successUrl()}
                 icon={<CheckCircleIcon />}
                 onClick={() => filterSuccess()}
               />
-            </BottomNavigation>
-            {dateResultActive ? (
-              <div className={classes.center}>
-                <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                  <KeyboardDatePicker
-                    margin="normal"
-                    id="date-picker-dialog"
-                    label="Start Date"
-                    format="MM/dd/yyyy"
-                    value={selectedStartDate}
-                    onChange={handleDateChangeStart}
-                    KeyboardButtonProps={{
-                      "aria-label": "change date",
+              <BottomNavigationAction
+                style={{ color: dateFilter ? "blue" : "" }}
+                icon={<DateRangeIcon />}
+                onClick={() => {
+                  setDateFilter(!dateFilter);
+                }}
+              />
+              <br />
+              {dateFilter ? (
+                <div>
+                  <TextField
+                    id="date"
+                    label="From"
+                    type="date"
+                    className={classes.textField}
+                    InputLabelProps={{
+                      shrink: true,
                     }}
+                    value={new Date(initialDateRange * 1000)
+                      .toISOString()
+                      .slice(0, 10)}
+                    onChange={(e) => initialDate(e)}
                   />
-                  {startDate ? (
-                    <KeyboardDatePicker
-                      margin="normal"
-                      id="date-picker-dialog"
-                      label="End Date"
-                      format="MM/dd/yyyy"
-                      value={selectedEndDate}
-                      onChange={handleDateChangeEnd}
-                      KeyboardButtonProps={{
-                        "aria-label": "change date",
-                      }}
-                    />
-                  ) : (
-                    ""
-                  )}
-                </MuiPickersUtilsProvider>
-              </div>
-            ) : (
-              ""
-            )}
+                  <TextField
+                    id="date"
+                    label="To"
+                    type="date"
+                    className={classes.textField}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    value={new Date(finalDateRange * 1000)
+                      .toISOString()
+                      .slice(0, 10)}
+                    onChange={(e) => finalDate(e)}
+                  />
+
+                  <BottomNavigationAction
+                    component={Link}
+                    to={dateUrl()}
+                    icon={<FindReplaceIcon />}
+                    onClick={() => filterDate()}
+                  />
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
 
             <div className={classes.center}>
               {launches.length} Launches{" "}

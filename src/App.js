@@ -8,6 +8,19 @@ import Axios from "axios";
 
 function App() {
   const [data, setData] = useState(null);
+  const filterUpcoming = () => {
+    let upcoming = data.filter((launch) => {
+      return launch.upcoming;
+    });
+    return upcoming;
+  };
+
+  const filterPast = () => {
+    let past = data.filter((launch) => {
+      return !launch.upcoming;
+    });
+    return past;
+  };
   useEffect(() => {
     Axios.get("https://api.spacexdata.com/v3/launches").then((res) => {
       setData(res.data);
@@ -18,24 +31,38 @@ function App() {
       <Header />
       {data ? (
         <Switch>
-          <Route exact path="/">
-            <DashBoard data={{ launches: data, value: 0 }} />
-          </Route>
-          <Route exact path="/upcoming">
-            <DashBoard data={{ launches: data, value: 1 }} />
-          </Route>
-          <Route exact path="/past">
-            <DashBoard data={{ launches: data, value: 2 }} />
-          </Route>
-          <Route exact path="/date">
-            <DashBoard data={{ launches: data, value: 3 }} />
-          </Route>
-          <Route exact path="/failed">
-            <DashBoard data={{ launches: data, value: 4 }} />
-          </Route>
-          <Route exact path="/success">
-            <DashBoard data={{ launches: data, value: 5 }} />
-          </Route>
+          <Route
+            exact
+            path="/"
+            render={(props) => (
+              <DashBoard
+                data={{ launches: data, value: 0, all: data, ...props }}
+              />
+            )}
+          ></Route>
+          <Route
+            exact
+            path="/upcoming"
+            render={(props) => (
+              <DashBoard
+                data={{
+                  launches: filterUpcoming(),
+                  value: 1,
+                  all: data,
+                  ...props,
+                }}
+              />
+            )}
+          ></Route>
+          <Route
+            exact
+            path="/past"
+            render={(props) => (
+              <DashBoard
+                data={{ launches: filterPast(), value: 2, all: data, ...props }}
+              />
+            )}
+          ></Route>
         </Switch>
       ) : (
         <Loader />
