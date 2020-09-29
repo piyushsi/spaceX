@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   },
   content: {
     flex: "1 0 auto",
-    width: "19rem",
+    width: "15rem",
     height: "8rem",
   },
   cover: {
